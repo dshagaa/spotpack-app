@@ -10,19 +10,24 @@
     '/agenda': MyAgenda,
   }
 
-  let currentPath = '/'
-  let toast = { show: false, message: '', type: '' }
+  let currentPath = $state(location.pathname)
+  let toast = $state({ show: false, message: '', type: '' })
   let toastTimer = null
+
+  function updatePath() {
+    currentPath = location.pathname
+  }
 
   function showToast(message, type = '') {
     toast = { show: true, message, type }
     clearTimeout(toastTimer)
-    toastTimer = setTimeout(() => { toast.show = false }, 4200)
+    toastTimer = setTimeout(() => { toast = { show: false, message: '', type: '' } }, 4200)
   }
 
-  // Expose toast globally so components can dispatch
   window.showToast = showToast
 </script>
+
+<svelte:window onpopstate={updatePath} />
 
 <div class="min-h-screen bg-[#1A1025] text-[#F5F0FA] font-sans antialiased">
 
@@ -36,7 +41,7 @@
   <!-- Header -->
   <header class="max-w-4xl mx-auto px-4 pt-5 md:pt-8">
     <div class="flex items-center justify-between gap-3">
-      <a href="/" class="flex items-center gap-3 min-h-11" aria-label="SpotPack, inicio">
+      <a href="/" onclick={updatePath} class="flex items-center gap-3 min-h-11" aria-label="SpotPack, inicio">
         <span class="grid place-items-center w-10 h-10 rounded-2xl bg-[#E87D3E] text-2xl">🐆</span>
         <span>
           <span class="block text-lg font-black tracking-tight">SpotPack</span>
@@ -47,23 +52,23 @@
 
     <!-- Nav -->
     <nav class="flex items-center gap-1 mt-8" aria-label="Principal">
-      <a href="/" class="px-4 py-2 rounded-xl text-sm {currentPath === '/' ? 'bg-[#3D2552] text-[#F5F0FA]' : 'text-[#9B8EAB] hover:text-[#F5F0FA]'}">Eventos</a>
-      <a href="/agenda" class="px-4 py-2 rounded-xl text-sm {currentPath === '/agenda' ? 'bg-[#3D2552] text-[#F5F0FA]' : 'text-[#9B8EAB] hover:text-[#F5F0FA]'}">Mi agenda</a>
+      <a href="/" onclick={updatePath} class="px-4 py-2 rounded-xl text-sm {currentPath === '/' ? 'bg-[#3D2552] text-[#F5F0FA]' : 'text-[#9B8EAB] hover:text-[#F5F0FA]'}">Eventos</a>
+      <a href="/agenda" onclick={updatePath} class="px-4 py-2 rounded-xl text-sm {currentPath === '/agenda' ? 'bg-[#3D2552] text-[#F5F0FA]' : 'text-[#9B8EAB] hover:text-[#F5F0FA]'}">Mi agenda</a>
     </nav>
   </header>
 
   <!-- Main -->
   <main class="max-w-4xl mx-auto px-4 pt-8 md:pt-10" id="main-content">
-    <Router {routes} on:conditionsFailed={() => currentPath = '/'} />
+    <Router {routes} onconditionsfailed={updatePath} />
   </main>
 
   <!-- Mobile nav -->
   <nav class="fixed z-40 bottom-0 left-0 right-0 bg-[#1A1025]/95 backdrop-blur-lg border-t border-[#3D2552] px-3 pt-2 pb-safe" aria-label="Navegación móvil">
-    <a href="/" class="flex-1 min-h-12 grid place-items-center rounded-2xl text-xs gap-0.5 {currentPath === '/' ? 'text-[#E87D3E]' : 'text-[#9B8EAB]'}">
+    <a href="/" onclick={updatePath} class="flex-1 min-h-12 grid place-items-center rounded-2xl text-xs gap-0.5 {currentPath === '/' ? 'text-[#E87D3E]' : 'text-[#9B8EAB]'}">
       <span class="text-lg">⌂</span>
       <span>Eventos</span>
     </a>
-    <a href="/agenda" class="flex-1 min-h-12 grid place-items-center rounded-2xl text-xs gap-0.5 {currentPath === '/agenda' ? 'text-[#E87D3E]' : 'text-[#9B8EAB]'}">
+    <a href="/agenda" onclick={updatePath} class="flex-1 min-h-12 grid place-items-center rounded-2xl text-xs gap-0.5 {currentPath === '/agenda' ? 'text-[#E87D3E]' : 'text-[#9B8EAB]'}">
       <span class="text-lg">●</span>
       <span>Mi agenda</span>
     </a>
