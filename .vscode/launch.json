@@ -16,17 +16,18 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Vite Dev Server",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "name": "Debug Vite Dev Server",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite"],
       "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"]
     }
   ],
   "compounds": [
     {
       "name": "Debug SpotPack (Vite + Chrome)",
-      "configurations": ["Vite Dev Server", "Launch Chrome (unprofiled)"],
+      "configurations": ["Debug Vite Dev Server", "Launch Chrome (unprofiled)"],
       "stopAll": true
     }
   ]
