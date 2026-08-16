@@ -3,5 +3,12 @@ import { svelte } from '@sveltejs/vite-plugin-svelte'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
-  plugins: [tailwindcss(), svelte()],
+  plugins: [
+    tailwindcss(),
+    svelte({
+      compilerOptions: {
+        dev: true,
+      },
+    }),
+  ],
 })
