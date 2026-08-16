@@ -15,18 +15,31 @@ async function request(path, options = {}) {
   if (options.method && options.method !== 'GET') {
     headers['x-api-key'] = getApiKey()
   }
-  const res = await fetch(`${BASE}${path}`, { ...options, headers })
-  const text = await res.text()
-  
-  let data
-  try { data = JSON.parse(text) } catch {
-    throw new Error(`Unexpected response: ${text.slice(0, 100)}`)
+
+  let res
+  try {
+    res = await fetch(`${BASE}${path}`, { ...options, headers })
+  } catch {
+    throw new Error('No se pudo conectar al servidor')
   }
-  
+
   if (!res.ok) {
-    throw new Error(data.error || `HTTP ${res.status}`)
+    const text = await res.text()
+    let msg = `HTTP ${res.status}`
+    try {
+      const body = JSON.parse(text)
+      if (body.error) msg = body.error
+    } catch { /* not JSON, use status */ }
+    if (res.status === 502) msg = 'Backend no disponible — ejecutá wrangler dev'
+    throw new Error(msg)
   }
-  return data
+
+  const text = await res.text()
+  try {
+    return JSON.parse(text)
+  } catch {
+    throw new Error(`Respuesta inesperada del servidor`)
+  }
 }
 
 export function getEvents() { return request('/events') }
