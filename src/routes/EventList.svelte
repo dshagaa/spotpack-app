@@ -56,7 +56,9 @@
   let showCreate = $state(false)
 
   // Load on mount
-  fetchEvents()
+  $effect(() => {
+    fetchEvents()
+  })
 </script>
 
 <div>
