@@ -1,0 +1,33 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Launch Chrome (unprofiled)",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/src",
+      "userDataDir": false,
+      "runtimeArgs": ["--no-first-run"],
+      "sourceMapPathOverrides": {
+        "webpack:///./src/*": "${webRoot}/*"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Vite Dev Server",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug SpotPack (Vite + Chrome)",
+      "configurations": ["Vite Dev Server", "Launch Chrome (unprofiled)"],
+      "stopAll": true
+    }
+  ]
+}
