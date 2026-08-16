@@ -16,11 +16,17 @@ async function request(path, options = {}) {
     headers['x-api-key'] = getApiKey()
   }
   const res = await fetch(`${BASE}${path}`, { ...options, headers })
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}))
-    throw new Error(body.error || `HTTP ${res.status}`)
+  const text = await res.text()
+  
+  let data
+  try { data = JSON.parse(text) } catch {
+    throw new Error(`Unexpected response: ${text.slice(0, 100)}`)
   }
-  return res.json()
+  
+  if (!res.ok) {
+    throw new Error(data.error || `HTTP ${res.status}`)
+  }
+  return data
 }
 
 export function getEvents() { return request('/events') }
