@@ -1,0 +1,38 @@
+name: Code Quality Review
+
+on:
+  push:
+    branches: ['**', '!main', '!dev']
+  pull_request:
+    branches: ['**', '!main', '!dev']
+
+jobs:
+  review:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v2.x
+
+      - name: Cache Deno dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/deno
+          key: ${{ runner.os }}-deno-${{ hashFiles('supabase/functions/**/*.ts') }}
+          restore-keys: |
+            ${{ runner.os }}-deno-
+
+      - name: Check formatting
+        run: deno fmt --check supabase/functions/
+
+      - name: Lint
+        run: deno lint supabase/functions/
+
+      - name: Test
+        run: deno test --allow-env --allow-net supabase/functions/

@@ -1,0 +1,286 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SpotPack Backend API",
+    "version": "1.0.0",
+    "description": "API para digitalizar schedules de convenciones furry."
+  },
+  "servers": [
+    { "url": "http://127.0.0.1:54321/functions/v1", "description": "Local" },
+    {
+      "url": "https://{project}.supabase.co/functions/v1",
+      "description": "Production"
+    }
+  ],
+  "security": [{ "ApiKeyAuth": [] }],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key"
+      }
+    },
+    "schemas": {
+      "Event": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "start_date": { "type": "string", "format": "date" },
+          "end_date": { "type": "string", "format": "date" },
+          "location": { "type": "string" },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ScheduleItem": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "event_id": { "type": "string", "format": "uuid" },
+          "day_date": { "type": "string", "format": "date" },
+          "start_time": { "type": "string" },
+          "end_time": { "type": "string" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "room": { "type": "string" },
+          "category": {
+            "type": "string",
+            "enum": [
+              "panel",
+              "meetup",
+              "workshop",
+              "fursuit_games",
+              "dance",
+              "ceremony",
+              "other"
+            ]
+          },
+          "classification": {
+            "type": "string",
+            "enum": ["general", "+16", "+18", "+21"]
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" },
+          "detail": { "type": "string" }
+        }
+      }
+    },
+    "responses": {
+      "401": {
+        "description": "Unauthorized",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      },
+      "403": {
+        "description": "Forbidden",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      },
+      "400": {
+        "description": "Bad request",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      },
+      "404": {
+        "description": "Not found",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      },
+      "422": {
+        "description": "Unprocessable",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      },
+      "502": {
+        "description": "Bad gateway",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/get-events": {
+      "get": {
+        "summary": "List all events",
+        "operationId": "getEvents",
+        "tags": ["Events"],
+        "responses": {
+          "200": { "description": "OK" },
+          "401": { "$ref": "#/components/responses/401" }
+        }
+      }
+    },
+    "/get-event": {
+      "get": {
+        "summary": "Get event with items",
+        "operationId": "getEvent",
+        "tags": ["Events"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "OK" },
+          "400": { "$ref": "#/components/responses/400" },
+          "401": { "$ref": "#/components/responses/401" },
+          "404": { "$ref": "#/components/responses/404" }
+        }
+      }
+    },
+    "/create-event": {
+      "post": {
+        "summary": "Create event",
+        "operationId": "createEvent",
+        "tags": ["Events"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "start_date", "end_date"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "start_date": { "type": "string" },
+                  "end_date": { "type": "string" },
+                  "location": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Created" },
+          "400": { "$ref": "#/components/responses/400" },
+          "401": { "$ref": "#/components/responses/401" }
+        }
+      }
+    },
+    "/update-event": {
+      "patch": {
+        "summary": "Update event",
+        "operationId": "updateEvent",
+        "tags": ["Events"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["id"],
+                "properties": {
+                  "id": { "type": "string" },
+                  "name": { "type": "string" },
+                  "start_date": { "type": "string" },
+                  "end_date": { "type": "string" },
+                  "location": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Updated" },
+          "400": { "$ref": "#/components/responses/400" },
+          "401": { "$ref": "#/components/responses/401" }
+        }
+      }
+    },
+    "/import-schedule": {
+      "post": {
+        "summary": "Import schedule from image via AI",
+        "operationId": "importSchedule",
+        "tags": ["Import"],
+        "responses": {
+          "200": { "description": "Imported" },
+          "400": { "$ref": "#/components/responses/400" },
+          "401": { "$ref": "#/components/responses/401" },
+          "404": { "$ref": "#/components/responses/404" },
+          "422": { "$ref": "#/components/responses/422" },
+          "502": { "$ref": "#/components/responses/502" }
+        }
+      }
+    },
+    "/delete-event": {
+      "delete": {
+        "summary": "Delete event (maintainer only)",
+        "operationId": "deleteEvent",
+        "tags": ["Events"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Deleted" },
+          "400": { "$ref": "#/components/responses/400" },
+          "401": { "$ref": "#/components/responses/401" },
+          "403": { "$ref": "#/components/responses/403" }
+        }
+      }
+    },
+    "/create-api-key": {
+      "post": {
+        "summary": "Create API key (maintainer only)",
+        "operationId": "createApiKey",
+        "tags": ["Admin"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["role", "label"],
+                "properties": {
+                  "role": {
+                    "type": "string",
+                    "enum": ["general", "maintainer"]
+                  },
+                  "label": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Created" },
+          "400": { "$ref": "#/components/responses/400" },
+          "401": { "$ref": "#/components/responses/401" },
+          "403": { "$ref": "#/components/responses/403" }
+        }
+      }
+    }
+  },
+  "tags": [
+    { "name": "Events" },
+    { "name": "Import" },
+    { "name": "Admin" }
+  ]
+}

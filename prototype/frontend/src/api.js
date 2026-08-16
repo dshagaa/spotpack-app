@@ -1,0 +1,138 @@
+// src/api.js — authenticated API client with explicit network-only mutations
+import { clearAllSnapshots, clearSnapshot, getSnapshot, setSnapshot } from './lib/cache.js';
+import { KEYS, readLocalString } from './lib/storage.js';
+
+const ENV_KEY = typeof import.meta !== 'undefined' ? import.meta.env.VITE_SPOTPACK_API_KEY : '';
+const SUPABASE_PUB_KEY = typeof import.meta !== 'undefined'
+  ? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
+  : '';
+
+const BASE = () => readLocalString(KEYS.apiUrl, '') ||
+  'http://127.0.0.1:54321/functions/v1';
+
+function getApiKey() {
+  return readLocalString(KEYS.apiKey, '') || ENV_KEY;
+}
+
+function getSupabaseKey() {
+  return SUPABASE_PUB_KEY;
+}
+
+function headers() {
+  const h = {
+    'x-api-key': getApiKey(),
+    'Content-Type': 'application/json',
+  };
+  const sbKey = getSupabaseKey();
+  if (sbKey) h['apikey'] = sbKey;
+  return h;
+}
+
+async function request(path, options = {}) {
+  const res = await fetch(`${BASE()}${path}`, {
+    ...options,
+    headers: { ...headers(), ...options.headers },
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+export function getEvents() {
+  return request('/get-events');
+}
+
+export function getEvent(id) {
+  if (!id) throw new Error('Missing event ID');
+  return request(`/get-event?id=${encodeURIComponent(id)}`);
+}
+
+export async function getEventsCached({ force = false } = {}) {
+  const cached = !force ? getSnapshot('events') : null;
+  if (cached && !cached.stale) {
+    // Revalidate silently; caller gets a fast paint from local data.
+    request('/get-events').then((fresh) => setSnapshot('events', '', fresh)).catch(() => {});
+    return { ...cached.data, _cache: cached };
+  }
+  try {
+    const fresh = await getEvents();
+    setSnapshot('events', '', fresh);
+    return fresh;
+  } catch (error) {
+    if (cached) return { ...cached.data, _cache: cached };
+    throw error;
+  }
+}
+
+export async function getEventCached(id, { force = false } = {}) {
+  const cached = !force ? getSnapshot('event', id) : null;
+  if (cached && !cached.stale) {
+    request(`/get-event?id=${encodeURIComponent(id)}`)
+      .then((fresh) => setSnapshot('event', id, fresh)).catch(() => {});
+    return { ...cached.data, _cache: cached };
+  }
+  try {
+    const fresh = await getEvent(id);
+    setSnapshot('event', id, fresh);
+    return fresh;
+  } catch (error) {
+    if (cached) return { ...cached.data, _cache: cached };
+    throw error;
+  }
+}
+
+export function invalidateEventCache(id) {
+  clearSnapshot('event', id);
+  clearSnapshot('events');
+}
+
+export function invalidateAllCache() {
+  clearAllSnapshots();
+}
+
+export function createEvent(data) {
+  return request('/create-event', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }).then((result) => { invalidateAllCache(); return result; });
+}
+
+export function updateEvent(data) {
+  return request('/update-event', {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  }).then((result) => { invalidateEventCache(data.id); return result; });
+}
+
+export function deleteEvent(id) {
+  return request(`/delete-event?id=${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  }).then((result) => { invalidateEventCache(id); return result; });
+}
+
+export async function importSchedule(imageFile, eventId) {
+  const fd = new FormData();
+  fd.append('image', imageFile);
+  fd.append('event_id', eventId);
+  const res = await fetch(`${BASE()}/import-schedule`, {
+    method: 'POST',
+    headers: { 'x-api-key': getApiKey(), 'apikey': getSupabaseKey() },
+    body: fd,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `HTTP ${res.status}`);
+  }
+  const result = await res.json();
+  invalidateEventCache(eventId);
+  return result;
+}
+
+export function createApiKey(data) {
+  return request('/create-api-key', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
