@@ -6,7 +6,7 @@
 
 ## Overview
 
-SpotPack is a **zero-database, JSON-on-S3** web application. Events and schedule items are stored as JSON files in Cloudflare R2. A thin API layer (Pages Functions) handles reads and writes. The frontend is a Vite-bundled SPA using Alpine.js for reactivity.
+SpotPack is a **zero-database, JSON-on-S3** web application. Events and schedule items are stored as JSON files in Cloudflare R2. A thin API layer (Pages Functions) handles reads and writes. The frontend is a Vite-bundled SPA using Svelte 5 for reactivity.
 
 ---
 
@@ -53,26 +53,27 @@ SpotPack is a **zero-database, JSON-on-S3** web application. Events and schedule
 
 ## Layer 1: Frontend (SPA)
 
-**Tech:** Vite 8 + Alpine.js 3 + Tailwind CSS v4
+**Tech:** Vite 6 + Svelte 5 + Tailwind CSS v4
 
 **Key decisions:**
-- **No framework.** Alpine.js provides reactivity without a build step at runtime.
-- **No CDN imports.** Alpine.js and Tailwind are bundled into the Vite output.
+- **Svelte 5 runes.** `$state()`, `$derived()`, `$effect()`, `$props()` provide compile-time reactivity.
+- **No CDN imports.** Svelte and Tailwind are bundled into the Vite output.
 - **Hash-free routing.** Path-based SPA router using `history.pushState()` and `@popstate.window`.
 - **System fonts only.** No font downloads.
 
 **Components:**
-- `event-list.js` — Home page, card grid of events
-- `event-detail.js` — Event detail with day groups, search, category/room/+18 filters, schedule grid
-- `create-event.js` — Modal form for new/edit event
-- `import-modal.js` — Image upload → AI processing
-- `my-agenda.js` — Personal agenda from localStorage attending state
-- `api-key.js` — API key input for write operations
+- `EventList.svelte` — Home page, card grid of events
+- `EventDetail.svelte` — Event detail with day groups, search, category/room/+18 filters, schedule grid
+- `MyAgenda.svelte` — Personal agenda from localStorage attending state
+- Planned: `CreateEvent.svelte` — Modal form for new/edit event
+- Planned: `ImportModal.svelte` — Image upload → AI processing
+- Planned: `ApiKey.svelte` — API key input for write operations
 
 **State management:**
-- `Alpine.store('app')` — Global state: view, online status, refresh counter
-- `localStorage` — Attending state, API key, cached event snapshots
-- `sessionStorage` — UI state: route, selected day, search, category, room, adult filter
+- Module-level store (`src/lib/store.js`) — Attending state in localStorage
+- `src/lib/cache.js` — Snapshot cache with 30min TTL (localStorage)
+- `svelte-spa-router` — Client-side path-based routing
+- Per-component `$state()` — UI state: route, selected day, search, category, room, adult filter
 
 ---
 
