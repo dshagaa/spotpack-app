@@ -33,3 +33,8 @@ GOAL.md
 dist/
 skills-lock.json
 pnpm-lock.yaml
+
+# Cloudflare / Wrangler
+.wrangler/
+.dev.vars
+
