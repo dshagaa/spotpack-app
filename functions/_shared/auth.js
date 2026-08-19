@@ -1,6 +1,8 @@
 // functions/_shared/auth.js
 // API key verification with role-based permissions
 
+import { getKeys } from './r2.js';
+
 const PERMISSIONS = {
   general: {
     events: ['read', 'create', 'update'],
@@ -42,8 +44,10 @@ export async function authorize(request, env, action, resource) {
 
 /**
  * Hash a string with SHA-256 (Web Crypto API).
+ * @param {string} text
+ * @returns {Promise<string>} lowercase hex digest
  */
-async function sha256(text) {
+export async function sha256(text) {
   const encoder = new TextEncoder();
   const data = encoder.encode(text);
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
@@ -52,5 +56,12 @@ async function sha256(text) {
     .join('');
 }
 
-// Import getKeys from r2.js (avoids circular dependency by importing lazily)
-import { getKeys } from './r2.js';
+/**
+ * Generate a cryptographically-random 32-byte key as a hex string.
+ * @returns {string} 64 hex chars
+ */
+export function generateKey() {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+}
