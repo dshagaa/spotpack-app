@@ -1,0 +1,18 @@
+{
+  "name": "SpotPack",
+  "short_name": "SpotPack",
+  "description": "Your event schedule companion.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070910",
+  "theme_color": "#070910",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "lang": "en"
+}

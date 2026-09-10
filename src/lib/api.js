@@ -11,9 +11,10 @@ function authHeaders() {
 }
 
 async function request(path, options = {}) {
-  const headers = options.headers || authHeaders()
+  const headers = { ...(options.headers || authHeaders()) }
   if (options.method && options.method !== 'GET') {
-    headers['x-api-key'] = getApiKey()
+    const key = getApiKey()
+    if (key) headers['x-api-key'] = key
   }
 
   let res

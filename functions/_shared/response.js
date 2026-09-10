@@ -58,6 +58,13 @@ export function serverError(message) {
   });
 }
 
+export function badGateway(message) {
+  return new Response(JSON.stringify({ error: message }), {
+    status: 502,
+    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+  });
+}
+
 export function corsPreflight() {
   return new Response(null, {
     status: 204,
