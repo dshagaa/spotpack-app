@@ -1,25 +1,27 @@
 {
-  "name": "spotpack-app",
+  "name": "spotpack",
+  "version": "0.1.0",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "backend": "wrangler pages dev dist --port 8787"
+    "backend": "wrangler pages dev dist --local --port 8787",
+    "test": "node --test",
+    "check": "svelte-kit sync && svelte-check --workspace . --config ./svelte.config.js --tsconfig ./jsconfig.json"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^7.2.0",
+    "@sveltejs/adapter-cloudflare": "^7.2.9",
+    "@sveltejs/kit": "^2.70.3",
+    "@sveltejs/vite-plugin-svelte": "^4.0.0-next.6",
     "@tailwindcss/vite": "^4.3.3",
-    "svelte": "^5.56.8",
-    "svelte-spa-router": "^5.1.1",
+    "@types/node": "^22.20.2",
+    "svelte": "^5.57.0",
+    "svelte-check": "^4.7.6",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.0",
-    "wrangler": "^4.124.0"
-  },
-  "allowScripts": {
-    "esbuild@0.28.1": true,
-    "workerd@1.20260815.1": true
+    "typescript": "^5.9.3",
+    "vite": "^5.4.21",
+    "wrangler": "^4.130.0"
   }
 }

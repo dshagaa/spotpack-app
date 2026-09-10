@@ -3,7 +3,7 @@
 // multipart/form-data: image (File) + event_id (UUID)
 
 import { authorize, sha256 } from '../_shared/auth.js';
-import { corsPreflight, ok, badRequest, unauthorized, forbidden, notFound, serverError } from '../_shared/response.js';
+import { corsPreflight, badGateway, ok, badRequest, unauthorized, forbidden, notFound, serverError } from '../_shared/response.js';
 import { getEvent, saveEvent, listEvents, saveEventIndex } from '../_shared/r2.js';
 import { isValidUUID, normalizeCategory, normalizeClassification } from '../_shared/validation.js';
 
@@ -103,7 +103,7 @@ export async function onRequest(context) {
     });
 
     if (!visionRes.ok) {
-      return serverError(`Vision API error: ${visionRes.status}`);
+      return badGateway(`Vision API error: ${visionRes.status}`);
     }
 
     const visionData = await visionRes.json();

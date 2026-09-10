@@ -2,7 +2,7 @@
 // POST /api/keys — create a new API key (auth: maintainer)
 
 import { authorize, sha256, generateKey } from '../_shared/auth.js';
-import { corsPreflight, ok, badRequest, unauthorized, forbidden, serverError } from '../_shared/response.js';
+import { corsPreflight, created, badRequest, unauthorized, forbidden, serverError } from '../_shared/response.js';
 import { getKeys, saveKeys } from '../_shared/r2.js';
 
 export async function onRequest(context) {
@@ -36,7 +36,7 @@ export async function onRequest(context) {
     await saveKeys(env, keys);
 
     // Raw key returned ONCE — caller stores it
-    return ok({ key: rawKey, role, label });
+    return created({ key: rawKey, role, label });
   } catch (err) {
     return serverError(err.message);
   }

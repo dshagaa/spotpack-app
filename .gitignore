@@ -27,10 +27,9 @@ dist-ssr
 prototype
 .hermes
 AGENTS.md
-PLAN.md
 SESSION.md
-GOAL.md
 dist/
+.svelte-kit/
 skills-lock.json
 pnpm-lock.yaml
 
